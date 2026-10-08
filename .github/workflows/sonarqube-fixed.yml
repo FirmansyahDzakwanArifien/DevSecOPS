@@ -1,0 +1,27 @@
+name: SonarQube SAST Scan - Remediated
+
+on:
+  push:
+    branches:
+      - praktikum/sast-remediated
+    paths:
+      - 'laravel-sast-fixed/**'
+
+jobs:
+  sonarqube:
+    name: SonarQube Scan (Remediated)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Run SonarQube Scanner
+        uses: sonarsource/sonarqube-scan-action@master
+        with:
+          projectBaseDir: laravel-sast-fixed
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
