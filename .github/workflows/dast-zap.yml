@@ -1,10 +1,12 @@
 name: DAST - OWASP ZAP Baseline Scan
 
 # Pipeline DAST otomatis: menjalankan OWASP ZAP terhadap aplikasi SnipVault
-# setiap kali workflow dijalankan manual, terjadwal mingguan, atau file ini diubah.
+# setiap kali dijalankan manual, terjadwal mingguan, atau file ini diubah.
+# Menggunakan image resmi ghcr.io/zaproxy/zaproxy agar bebas dari masalah
+# upload-artifact v3 yang sudah di-deprecate pada action bawaan ZAP.
 
 on:
-  workflow_dispatch:          # jalankan manual dari tab Actions
+  workflow_dispatch:
   schedule:
     - cron: '0 2 * * 1'       # setiap Senin 02:00 UTC
   push:
@@ -13,31 +15,26 @@ on:
 
 permissions:
   contents: read
-  issues: write               # izin untuk melaporkan temuan sebagai issue (opsional)
 
 jobs:
   zap_baseline:
     name: OWASP ZAP Baseline Scan
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
       - name: Run OWASP ZAP Baseline Scan
-        uses: zaproxy/action-baseline@v0.12.0
-        with:
-          target: 'https://vulnlab.cyphera.my.id'
-          cmd_options: '-a'          # sertakan alert bertingkat informational
-          fail_action: false         # jangan hentikan pipeline (target lab)
-          allow_issue_writing: false # cukup unggah artefak laporan
+        run: |
+          mkdir -p zap-report && chmod 777 zap-report
+          docker run --rm -v "${{ github.workspace }}/zap-report:/zap/wrk/:rw" \
+            ghcr.io/zaproxy/zaproxy:stable \
+            zap-baseline.py \
+              -t https://vulnlab.cyphera.my.id \
+              -r report_html.html -w report_md.md -J report_json.json -a \
+          || true   # baseline exit code != 0 saat ada temuan; jangan hentikan job (target lab)
 
       - name: Upload ZAP report artifact
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: zap-dast-report
-          path: |
-            report_html.html
-            report_md.md
-            report_json.json
-          if-no-files-found: ignore
+          path: zap-report/
+          if-no-files-found: warn
