@@ -4,8 +4,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class Post extends Model
 {
-    // VULNERABILITY: Mass Assignment — $fillable not defined, $guarded empty
-    protected $guarded = [];
+    // FIX: Mass Assignment, hanya kolom berikut yang boleh diisi massal
+    protected $fillable = ['title', 'content', 'category', 'user_id'];
 
     public function user() { return $this->belongsTo(User::class); }
     public function comments() { return $this->hasMany(Comment::class); }

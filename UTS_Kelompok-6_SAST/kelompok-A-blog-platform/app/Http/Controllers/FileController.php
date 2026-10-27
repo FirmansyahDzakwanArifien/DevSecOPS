@@ -5,20 +5,25 @@ use Illuminate\Http\Request;
 
 class FileController extends Controller
 {
-    // VULNERABILITY: Path Traversal — user controls file path
+    // FIX: Path Traversal, path di-resolve dengan realpath() lalu dipastikan tetap di dalam direktori yang diizinkan
+    private function safePath(string $baseDir, ?string $relative): string
+    {
+        $base = realpath($baseDir);
+        $full = realpath($baseDir . DIRECTORY_SEPARATOR . (string) $relative);
+        abort_if($base === false || $full === false || !str_starts_with($full, $base . DIRECTORY_SEPARATOR), 404);
+        return $full;
+    }
+
     public function download(Request $request)
     {
-        $filename = $request->input('file');
-        // Attacker can pass: ../../.env or ../../../etc/passwd
-        $path = storage_path('app/public/' . $filename);
+        $path = $this->safePath(storage_path('app/public'), $request->input('file'));
         return response()->download($path);
     }
 
-    // VULNERABILITY: Path Traversal — read arbitrary file
     public function previewImage(Request $request)
     {
-        $file = $request->input('path');
-        $content = file_get_contents(base_path($file)); // No path validation
-        return response($content)->header('Content-Type', 'image/jpeg');
+        $path = $this->safePath(storage_path('app/public/images'), $request->input('path'));
+        abort_unless(in_array(mime_content_type($path), ['image/jpeg', 'image/png'], true), 415);
+        return response()->file($path);
     }
 }
