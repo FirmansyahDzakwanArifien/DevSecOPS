@@ -1,21 +1,22 @@
 <?php
+// FIX: kredensial & host database dibaca dari environment (.env), tidak di-hardcode
 return [
-    'default' => 'mysql',
+    'default' => env('DB_CONNECTION', 'mysql'),
     'connections' => [
         'mysql' => [
             'driver'   => 'mysql',
-            'host'     => '127.0.0.1',
-            'port'     => '3306',
-            'database' => 'blog_db',
-            'username' => 'root',
-            'password' => 'Admin@1234!',   // VULNERABILITY: Hardcoded credential
+            'host'     => env('DB_HOST', '127.0.0.1'),
+            'port'     => env('DB_PORT', '3306'),
+            'database' => env('DB_DATABASE', 'blog_db'),
+            'username' => env('DB_USERNAME'),
+            'password' => env('DB_PASSWORD'),
         ],
         'backup' => [
             'driver'   => 'mysql',
-            'host'     => '10.0.0.5',
-            'database' => 'blog_backup',
-            'username' => 'backup_user',
-            'password' => 'BackupPass99',  // VULNERABILITY: Hardcoded credential
+            'host'     => env('DB_BACKUP_HOST'),
+            'database' => env('DB_BACKUP_DATABASE', 'blog_backup'),
+            'username' => env('DB_BACKUP_USERNAME'),
+            'password' => env('DB_BACKUP_PASSWORD'),
         ],
     ],
 ];
