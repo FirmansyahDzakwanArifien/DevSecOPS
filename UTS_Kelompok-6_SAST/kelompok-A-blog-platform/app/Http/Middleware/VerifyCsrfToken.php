@@ -7,9 +7,7 @@ class VerifyCsrfToken extends Middleware
 {
     /**
      * The URIs that should be excluded from CSRF verification.
-     * TODO: Remove this before production!
+     * FIX: tidak ada pengecualian, semua request yang mengubah data wajib membawa token CSRF.
      */
-    protected $except = [
-        '*',  // VULNERABILITY: CSRF disabled globally — any form can be submitted from external sites
-    ];
+    protected $except = [];
 }
