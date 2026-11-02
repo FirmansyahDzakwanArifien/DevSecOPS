@@ -1,0 +1,43 @@
+name: SAST - SonarQube Scan (UTS Kelompok 6)
+
+# Pipeline SAST otomatis: setiap ada perubahan pada source kelompok-A-blog-platform,
+# kode dianalisis SonarQube dan job gagal bila Quality Gate tidak lolos.
+# Hasil CI dikirim ke project SonarQube terpisah (uts-kelompok6-blog-ci) supaya
+# baseline "sebelum" dan "sesudah" yang dipakai di laporan tidak tertimpa.
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ uts/sast-sonarqube-ci ]
+    paths:
+      - 'UTS_Kelompok-6_SAST/kelompok-A-blog-platform/**'
+      - '.github/workflows/sast-sonarqube.yml'
+  pull_request:
+    paths:
+      - 'UTS_Kelompok-6_SAST/kelompok-A-blog-platform/**'
+
+permissions:
+  contents: read
+
+jobs:
+  sonarqube:
+    name: SonarQube Analysis + Quality Gate
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0   # riwayat penuh agar blame / new code SonarQube akurat
+
+      - name: SonarQube Scan
+        uses: SonarSource/sonarqube-scan-action@v8.3.0
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+        with:
+          projectBaseDir: UTS_Kelompok-6_SAST/kelompok-A-blog-platform
+          args: >
+            -Dsonar.projectKey=uts-kelompok6-blog-ci
+            -Dsonar.projectName=UTS-Kelompok6-Blog-CI
+            -Dsonar.qualitygate.wait=true
+            -Dsonar.qualitygate.timeout=300
