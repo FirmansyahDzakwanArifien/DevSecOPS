@@ -67,3 +67,4 @@ sonar-scanner -Dsonar.projectKey=<project-key>
 - Workflow `.github/workflows/sast-sonarqube.yml` menjalankan SonarQube scan otomatis setiap push/PR yang mengubah `kelompok-A-blog-platform/`, atau manual lewat tab **Actions → Run workflow**.
 - Job gagal bila Quality Gate tidak lolos (`sonar.qualitygate.wait=true`), sehingga kerentanan baru langsung ketahuan sebelum merge.
 - Hasil CI masuk ke project SonarQube terpisah: https://sonarqube.cyphera.my.id/dashboard?id=uts-kelompok6-blog-ci (project sebelum/sesudah tidak tertimpa).
+- Penjelasan lengkap: [`PENJELASAN_CI_SONARQUBE.md`](PENJELASAN_CI_SONARQUBE.md)
